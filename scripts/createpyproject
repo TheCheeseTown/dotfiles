@@ -1,0 +1,135 @@
+#!/usr/bin/env bash
+
+set -e
+
+PROJECT="$1"
+AUTHOR="$2"
+
+if [[ -z "$PROJECT" || -z "$AUTHOR" ]]; then
+	echo "Usage: createpyproject <project-name> <author>"
+	exit 1
+fi
+
+MODULE="${PROJECT//-/_}"
+
+if [[ -d "$PROJECT" ]]; then
+	echo "Error: directory '$PROJECT' already exists" >&2
+	exit 1
+fi
+
+echo "Creating project '$PROJECT'..."
+
+mkdir -p "$PROJECT"/{src/"$MODULE",tests}
+
+# --- pyproject.toml ---
+cat > "$PROJECT/pyproject.toml" <<EOF
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "$PROJECT"
+version = "0.1.0"
+description = ""
+authors = [{ name = "$AUTHOR" }]
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+EOF
+
+# --- Source package ---
+cat > "$PROJECT/src/$MODULE/__init__.py" <<EOF
+__version__ = "0.1.0"
+EOF
+
+cat > "$PROJECT/src/$MODULE/main.py" <<EOF
+def main() -> None:
+    print("Hello from $PROJECT!")
+
+if __name__ == "__main__":
+    main()
+EOF
+
+# --- Tests ---
+cat > "$PROJECT/tests/__init__.py" <<EOF
+EOF
+
+cat > "$PROJECT/tests/test_main.py" <<EOF
+from $MODULE.main import main
+
+def test_main(capsys):
+    main()
+    captured = capsys.readouterr()
+    assert "Hello" in captured.out
+EOF
+
+# --- requirements.txt ---
+cat > "$PROJECT/requirements.txt" <<EOF
+# Add runtime dependencies here, then: pip install -r requirements.txt
+EOF
+
+cat > "$PROJECT/requirements-dev.txt" <<EOF
+pytest
+ruff
+EOF
+
+# --- .gitignore ---
+cat > "$PROJECT/.gitignore" <<'EOF'
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+env/
+.venv/
+.ruff_cache/
+.pytest_cache/
+.DS_Store
+EOF
+
+# --- README ---
+cat > "$PROJECT/README.md" <<EOF
+# $PROJECT
+
+## Setup
+
+\`\`\`sh
+python3 -m venv env && source env/bin/activate
+pip install -r requirements-dev.txt
+\`\`\`
+
+## Run
+
+\`\`\`sh
+python -m $MODULE.main
+\`\`\`
+
+## Test
+
+\`\`\`sh
+pytest
+\`\`\`
+EOF
+
+# --- Git + venv ---
+git -C "$PROJECT" init -q
+git -C "$PROJECT" add .
+git -C "$PROJECT" commit -q -m "Initial commit"
+
+echo "Setting up virtual environment..."
+python3 -m venv "$PROJECT/env"
+"$PROJECT/env/bin/pip" install --quiet --upgrade pip
+"$PROJECT/env/bin/pip" install --quiet -r "$PROJECT/requirements-dev.txt"
+
+echo ""
+echo "Done! Get started:"
+echo "  cd $PROJECT && source env/bin/activate"

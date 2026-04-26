@@ -1,0 +1,25 @@
+# Navigation
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ll='ls -lAFh'
+alias la='ls -A'
+
+# Git
+alias g='git'
+alias gs='git status'
+alias ga='git add'
+alias gc='git commit'
+alias gp='git push'
+alias gl='git log --oneline --graph --decorate'
+alias gd='git diff'
+
+# Python
+alias py='python3'
+alias pip='pip3'
+alias venv='source env/bin/activate'
+
+# Reload shell config
+alias reload='source ~/.zshrc'
+
+# Print each PATH entry on its own line
+alias path='echo $PATH | tr ":" "\n"'

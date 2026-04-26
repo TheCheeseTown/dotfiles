@@ -1,0 +1,15 @@
+# Editor
+export EDITOR='nvim'
+export VISUAL='nvim'
+
+# Larger history, no duplicates
+export HISTSIZE=32768
+export HISTFILESIZE=$HISTSIZE
+export HISTCONTROL=ignoredups
+
+# Locale
+export LANG='en_US.UTF-8'
+export LC_ALL='en_US.UTF-8'
+
+# Don't litter __pycache__ when running scripts directly
+export PYTHONDONTWRITEBYTECODE=1

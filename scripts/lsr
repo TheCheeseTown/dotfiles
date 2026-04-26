@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+
+T_MID='├── '
+T_END='└── '
+T_BAR='│   '
+T_SPC='    '
+
+if [[ -t 1 ]]; then
+    C_DIR='\033[1;34m'   # bold blue
+    C_EXE='\033[1;32m'   # bold green
+    C_LNK='\033[1;36m'   # bold cyan
+    C_DIM='\033[2m'
+    C_RST='\033[0m'
+else
+    C_DIR='' C_EXE='' C_LNK='' C_DIM='' C_RST=''
+fi
+
+file_color() {
+    if   [[ -L "$1" ]]; then printf '%s' "$C_LNK"
+    elif [[ -d "$1" ]]; then printf '%s' "$C_DIR"
+    elif [[ -x "$1" ]]; then printf '%s' "$C_EXE"
+    fi
+}
+
+list_dir() {
+    local dir="$1" depth="$2" max_depth="$3" prefix="$4" show_info="$5"
+    local items=()
+
+    while IFS= read -r -d '' item; do
+        items+=("$item")
+    done < <(find "$dir" -maxdepth 1 -mindepth 1 -print0 2>/dev/null | sort -z)
+
+    local count=${#items[@]} i=0
+    for item in "${items[@]}"; do
+        i=$((i + 1))
+        local name color suffix conn next_pre
+        name=$(basename "$item")
+        color=$(file_color "$item")
+        suffix=''; [[ -d "$item" && ! -L "$item" ]] && suffix='/'
+
+        if [[ $i -eq $count ]]; then
+            conn="$T_END"; next_pre="${prefix}${T_SPC}"
+        else
+            conn="$T_MID"; next_pre="${prefix}${T_BAR}"
+        fi
+
+        if [[ "$show_info" == 1 ]]; then
+            local meta
+            meta=$(ls -lad -- "$item" 2>/dev/null | awk '{print $1,$2,$3,$4,$5,$6,$7,$8}')
+            printf "${C_DIM}%s%s${C_RST}%s  ${color}%s%s${C_RST}\n" \
+                "$prefix" "$conn" "$meta" "$name" "$suffix"
+        else
+            printf "${C_DIM}%s%s${C_RST}${color}%s%s${C_RST}\n" \
+                "$prefix" "$conn" "$name" "$suffix"
+        fi
+
+        if [[ -d "$item" && ! -L "$item" && ( "$max_depth" -eq -1 || "$depth" -lt "$max_depth" ) ]]; then
+            list_dir "$item" $((depth + 1)) "$max_depth" "$next_pre" "$show_info"
+        fi
+    done
+}
+
+show_info=0
+max_depth=2
+
+while getopts ":ia" opt; do
+    case $opt in
+        i) show_info=1 ;;
+        a) max_depth=-1 ;;
+        *) printf "Usage: lsr [-i] [-a] [DEPTH]\n  -i     show file metadata\n  -a     no depth limit\n  DEPTH  levels deep (default 2, 0 = this dir only)\n" >&2; exit 1 ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+if [[ $# -gt 0 ]]; then
+    [[ "$1" =~ ^[0-9]+$ ]] || { printf "Usage: lsr [-i] [-a] [DEPTH]\n" >&2; exit 1; }
+    [[ "$max_depth" -ne -1 ]] && max_depth=$1
+fi
+
+if [[ "$show_info" == 1 ]]; then
+    meta=$(ls -lad . 2>/dev/null | awk '{print $1,$2,$3,$4,$5,$6,$7,$8}')
+    printf "${C_DIM}%s${C_RST}  ${C_DIR}./${C_RST}\n" "$meta"
+else
+    printf "${C_DIR}./${C_RST}\n"
+fi
+
+list_dir "." 0 "$max_depth" "" "$show_info"
