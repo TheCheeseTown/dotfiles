@@ -122,6 +122,8 @@ EOF
 
 # --- Git + venv ---
 git -C "$PROJECT" init -q
+git -C "$PROJECT" config user.name "${GIT_AUTHOR_NAME:-$AUTHOR}"
+git -C "$PROJECT" config user.email "${GIT_AUTHOR_EMAIL:-}"
 git -C "$PROJECT" add .
 git -C "$PROJECT" commit -q -m "Initial commit"
 

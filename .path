@@ -1,1 +1,6 @@
 export PATH="$HOME/scripts:$PATH"
+
+# Homebrew Python is keg-only — add unversioned symlinks (python, python3, pip, pip3)
+if command -v brew &>/dev/null; then
+	export PATH="$(brew --prefix python@3)/libexec/bin:$PATH"
+fi

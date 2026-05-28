@@ -2,7 +2,7 @@
 
 cd "$(dirname "${BASH_SOURCE}")"
 
-git pull origin main
+git pull origin "$(git rev-parse --abbrev-ref HEAD)" 2>/dev/null || true
 
 function doIt() {
 	rsync --exclude ".git/" \
@@ -14,7 +14,7 @@ function doIt() {
 		--exclude "CLAUDE.md" \
 		--exclude "README.md" \
 		-avh --no-perms . ~
-	source ~/.zshrc
+	[[ -n "$ZSH_VERSION" ]] && source ~/.zshrc || true
 }
 
 if [ "$1" == "--force" -o "$1" == "-f" ]; then

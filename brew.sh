@@ -14,7 +14,7 @@ BREW_PREFIX=$(brew --prefix)
 # Install GNU core utilities (those that come with macOS are outdated).
 # Don't forget to add `$(brew --prefix coreutils)/libexec/gnubin` to `$PATH`.
 brew install coreutils
-ln -s "${BREW_PREFIX}/bin/gsha256sum" "${BREW_PREFIX}/bin/sha256sum"
+ln -sf "${BREW_PREFIX}/bin/gsha256sum" "${BREW_PREFIX}/bin/sha256sum"
 
 # Install GnuPG to enable PGP-signing commits.
 brew install gnupg
@@ -30,12 +30,14 @@ brew install gmp
 # Useful packages
 brew install neovim
 brew install --cask kitty
+brew install --cask ghostty
 brew install tmux
 brew install git
 brew install tree-sitter
 brew install lazygit
 brew install fastfetch
 brew install python@3
+brew install pipx
 brew install iperf
 brew install gcc
 brew install --cask font-jetbrains-mono-nerd-font

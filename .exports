@@ -4,8 +4,10 @@ export VISUAL='nvim'
 
 # Larger history, no duplicates
 export HISTSIZE=32768
-export HISTFILESIZE=$HISTSIZE
-export HISTCONTROL=ignoredups
+export SAVEHIST=$HISTSIZE       # zsh
+export HISTFILESIZE=$HISTSIZE   # bash fallback
+[[ -n "$ZSH_VERSION" ]]  && setopt HIST_IGNORE_DUPS HIST_IGNORE_SPACE
+[[ -n "$BASH_VERSION" ]] && export HISTCONTROL=ignoredups
 
 # Locale
 export LANG='en_US.UTF-8'
